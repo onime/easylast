@@ -1,2 +1,2 @@
 install:
-	cp dlthings.py /usr/lib/python3.3
+	cp easylast.py /usr/lib/python3.3
