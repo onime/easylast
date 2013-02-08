@@ -1,12 +1,11 @@
 #!/usr/bin/python
 
 from easylast import *
+from functools import reduce
 
-#upd_last_manga_dl("manga.test",121)
+#print(infos_last("*",".","DL"))
 
-ns = "03"
-ne = 10
+suppr_info("TEST","DL")
 
-(ns,ne) = format_number_zero([ns,ne])
+print(infos_last("*",".","DL"))
 
-print(ns+" "+ne)
