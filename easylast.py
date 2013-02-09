@@ -7,7 +7,7 @@ from lxml import etree
 
 port_remote = 2345
 host_remote = "192.168.0.101"
-re_nseason_nep = "S([0-9]+)E([0-9]+)|([0-9]+)x([0-9]+)"
+re_nseason_nep = "S([0-9]+)E([0-9]+)|([0-9]+)x([0-9]+)|([0-9]{3})"
 parserHTML =  etree.HTMLParser( recover=True,encoding='utf-8')
 
 def connect_remote():
@@ -42,7 +42,7 @@ def read_last_xml(bd):
     sock.sendall(b"last_seen "+choose_bd(bd) +b"-w \n")
     xml = sock.recv(4096).decode('utf-8')
     
-    while re.search('root>',xml) == None:
+    while re.search('root>',xml) == None and re.search('/>',xml) == None:
             xml +=sock.recv(4096).decode('utf-8')
     
     sock.close()       
@@ -120,7 +120,7 @@ def add_manga(name,chap,bd):
     """ The function add a manga name with the chap in the bd """
     sock = connect_remote()
 
-    sock.sendall(b"last_seen "+choose_bd(bd) + b" -a "+name.encode()+ b" -c "+chap.encode())
+    sock.sendall(b"last_seen "+choose_bd(bd) + b" -a "+name.encode()+ b" -c "+str(chap).encode())
 
     sock.close()
 
@@ -128,7 +128,7 @@ def add_show(name,season,episode,bd):
     """ The function add a show name with the season and episode in the bd """
     sock = connect_remote()
     
-    sock.sendall(b"last_seen "+choose_bd(bd) + b" -a "+name.encode() + b" -s "+season.encode() + b" -e "+episode.encode())
+    sock.sendall(b"last_seen "+choose_bd(bd) + b" -a "+name.encode() + b" -s "+str(season).encode() + b" -e "+str(episode).encode())
 
     sock.close()
 
@@ -159,14 +159,16 @@ def format_number_zero(number_list):
 
 def parse_regex(res_regex):
     """ The function parse the regex to get the numero of the season and the numero of the episode
-    Return a the num_season and the num_episode in a list """
+    Return a the num_season and the num_episode in a list or the num_chap"""
     if(res_regex.group(1) != None):
         num_season_cur = res_regex.group(1)
         num_episode_cur = res_regex.group(2)
-    else:
+    elif res_regex.group(3) != None:
         num_season_cur = res_regex.group(3)
         num_episode_cur = res_regex.group(4)
-                
+    else:
+        return format_number_zero([res_regex.group(5)])
+    
     return format_number_zero([num_season_cur,num_episode_cur])
 
 def format_name(name,sep):
