@@ -52,11 +52,11 @@ def infos_last(type_infos,sep,dl_or_seen):
             if section == type_infos == "SHOW":
                 
                 num = info_config[section][k].split(',')
-                elem = [k.replace('.',sep),num[0],num[1]]
+                elem = [k.replace('.',sep),int(num[0]),int(num[1])]
                 ret.append(elem)
 
             if section == type_infos == "MANGA":
-                ret.append([k.replace('.',sep),info_config[section][k]])
+                ret.append([k.replace('.',sep),int(info_config[section][k])])
     return ret  
     
 
