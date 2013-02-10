@@ -5,6 +5,7 @@ import socket
 import re
 from lxml import etree
 import configparser
+import os
 
 path_file_info = "/home/yosholo/.config/utils/infos_last"
 regex_infos = "S([0-9]+)E([0-9]+)|([0-9]+)x([0-9]+)|([0-9]{3})"
@@ -58,17 +59,17 @@ def infos_last(type_infos,sep,dl_or_seen):
             if section == type_infos == "MANGA":
                 ret.append([k.replace('.',sep),int(info_config[section][k])])
     return ret  
-    
+
 
 def upd_last_manga(nom_manga,num_chap,ext_config):
     """ The function update a nom_manga to the num_chap in the config_file.ext_config """ 
- 
+    
     list_infos = infos_last("MANGA",".",ext_config)
     manga_info = find_info(nom_manga,list_infos)
-        
+    
     if manga_info == None:
         return False
-       
+    
     manga_info[1] = str(num_chap)
     write_info(manga_info,ext_config)
     
@@ -88,7 +89,7 @@ def upd_last_show(name_show,num_season,num_episode,ext_config):
 
 def incr_last(name,ext_config):
     """ The function incremente the name in the bd """
-   
+    
     infos = infos_last("MANGA",".",ext_config) + infos_last("SHOW",".",ext_config)
 
     infos = find_info(name,infos)
@@ -147,5 +148,27 @@ def format_name(name,sep):
     name_f = '.'.join(word[0].upper() + word[1:] for word in name.lower().split(sep))    
     return name_f
 
+def send_inform(message):
+    
+    path_fifo = "/home/yosholo/.config/utils/.inform_fifo"
+    if not os.path.exists(path_fifo):
+        os.mkfifo(path_fifo)
 
-__version__ = '0.1'
+    try:
+        fifo = os.open(path_fifo,os.O_WRONLY | os.O_NONBLOCK)
+        os.write(fifo,message.encode("utf-8"))
+    except:
+        print("There's no process to read the info")
+
+def read_inform():
+
+    path_fifo = "/home/yosholo/.config/utils/.inform_fifo"
+    if not os.path.exists(path_fifo):
+        os.mkfifo(path_fifo)
+
+    fifo = os.open(path_fifo,os.O_RDONLY)
+    message = os.read(fifo,4096)
+    
+    return message
+
+__version__ = '0.2'
