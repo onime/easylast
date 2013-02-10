@@ -2,3 +2,4 @@ __pycache__
 Makefile
 TODO
 doc
+test_mod.py

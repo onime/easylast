@@ -4,28 +4,33 @@
 import socket
 import re
 from lxml import etree
+import configparser
 
-port_remote = 2345
-host_remote = "192.168.0.101"
-re_nseason_nep = "S([0-9]+)E([0-9]+)|([0-9]+)x([0-9]+)|([0-9]{3})"
+path_file_info = "/home/yosholo/.config/utils/infos_last"
+regex_infos = "S([0-9]+)E([0-9]+)|([0-9]+)x([0-9]+)|([0-9]{3})"
 parserHTML =  etree.HTMLParser( recover=True,encoding='utf-8')
 
-def connect_remote():
-    """ Return a socket connect to host_remote on port_remote """
-    sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    sock.connect((host_remote,port_remote))
+def write_info(info,dl_or_seen,cmd="ADD"):
 
-    return sock
+    info_config = configparser.ConfigParser()
+    info_config.read(path_file_info+"."+dl_or_seen)
+    
+    if cmd == "ADD":
+        if len(info) == 2:
+            info_config["MANGA"][info[0]] = str(info[1])
+        else:
+            info_config["SHOW"][info[0]] = str(info[1])+","+str(info[2])
+    elif cmd == "DEL":
+        if len(info) == 2:
+            del(info_config["MANGA"][info[0]])
+        else:
+            del(info_config["SHOW"][info[0]])
 
-def choose_bd(bd):
-    """ Return a string who determine the argument in the command line
-    the argument is DL or VU """
-    arg = b" "    
-    if bd == "DL":
-        arg = b"-d"
-    return arg
+    with open(path_file_info+"."+dl_or_seen, 'w') as configfile:
+        info_config.write(configfile)
 
-def find_real_name_in_bd(name,infos):
+    
+def find_info(name,infos):
 
     """ Return the infos which correspond to the real name in the bd """    
     ret = None
@@ -34,115 +39,78 @@ def find_real_name_in_bd(name,infos):
             ret = info
     return ret
 
+def infos_last(type_infos,sep,dl_or_seen):
 
-def read_last_xml(bd):
-
-    """ Return the xml send by last_seen, the argument is DL or VU """
-    sock = connect_remote()
-    sock.sendall(b"last_seen "+choose_bd(bd) +b"-w \n")
-    xml = sock.recv(4096).decode('utf-8')
+    info_config = configparser.ConfigParser()
+    info_config.read(path_file_info+"."+dl_or_seen)
     
-    while re.search('root>',xml) == None and re.search('/>',xml) == None:
-            xml +=sock.recv(4096).decode('utf-8')
+    ret = []
     
-    sock.close()       
-    xml = xml.replace('\n','')
+    for section in info_config.sections():
+        
+        for k in info_config[section].keys():
+            if section == type_infos == "SHOW":
+                
+                num = info_config[section][k].split(',')
+                elem = [k.replace('.',sep),num[0],num[1]]
+                ret.append(elem)
 
-    return xml
-
-def infos_last(type_infos,sep,bd):
-    """ The function get the info in the bd
-    Params
-    type_infos -- can either be MANGA or SHOW or * 
-    sep        -- is the separtor between the name in the bd
-    bd         -- can be DL or VU 
+            if section == type_infos == "MANGA":
+                ret.append([k.replace('.',sep),info_config[section][k]])
+    return ret  
     
-    the function return a list of list of info  """
 
-    root_xml = etree.fromstring(read_last_xml(bd))
-    infos = root_xml.xpath("//info")
-    list_infos = []
-    for i in infos:
-        i.attrib["name"] = i.attrib["name"].replace(".",sep)
-        if i.attrib["type"] == type_infos:
-            if type_infos == "SHOW":
-                list_infos.append([i.attrib["name"],int(i.attrib["num_season"]),int(i.attrib["num_episode"])])
-            elif type_infos == "MANGA":
-                list_infos.append([i.attrib["name"],int(i.attrib["num_chap"])])
-        elif type_infos == "*":
-            list_infos.append([i.attrib["name"],int(i.attrib["num_chap"]),int(i.attrib["num_season"]),int(i.attrib["num_episode"])])
-    return list_infos
-
-def upd_last_manga(nom_manga,num_chap,bd):
-    """ The function update a nom_manga to the num_chap in the bd  """ 
-    list_infos = infos_last(type_info,".",bd)
-    sock = connect_remote()
-
-    manga_info = find_real_name_in_bd(nom_manga,list_infos)
-    
+def upd_last_manga(nom_manga,num_chap,ext_config):
+    """ The function update a nom_manga to the num_chap in the config_file.ext_config """ 
+ 
+    list_infos = infos_last("MANGA",".",ext_config)
+    manga_info = find_info(nom_manga,list_infos)
+        
     if manga_info == None:
-        sock.close()
-        return None
+        return False
+       
+    manga_info[1] = str(num_chap)
+    write_info(manga_info,ext_config)
+    
+    return True
 
-    if num_chap > manga_info[1]:
-        num_chap = str(num_chap)
-        sock.sendall(b"last_seen "+choose_bd(bd)+ b" -u "+manga_info[0].encode()+b" -c "+num_chap.encode() +b"\n")
-
-    sock.close()
-
-def upd_last_show(name_show,num_season,num_episode,bd):
+def upd_last_show(name_show,num_season,num_episode,ext_config):
     """ The function update a name_show to the num_season and num_episode in the bd  """ 
-    list_show = infos_last("SHOW",".",bd)
-    sock = connect_remote()
-
-    show_info = find_real_name_in_bd(name_show,list_show)
+    list_show = infos_last("SHOW",".",ext_config)
+    show_info = find_info(name_show,list_show)
 
     if show_info == None:
-        sock.close()
-        return None
+        return False
     
-    if num_season > show_info[2] or (num_season == show_info[2] and num_episode > show_info[1]):
-        num_episode = str(num_episode)
-        num_season = str(num_season)
-        sock.sendall(b"last_seen "+choose_bd(bd)+b" -u "+show_info[0].encode() + b" -s "+num_season.encode() + b" -e " + num_episode.encode())
+    show_info[2] = str(num_episode)
+    show_info[1] = str(num_season)
+    write_info(show_info,ext_config)
 
-def incr_last(name,bd):
+def incr_last(name,ext_config):
     """ The function incremente the name in the bd """
-    infos = infos_last("*",".",bd)
-    sock = connect_remote()
+   
+    infos = infos_last("MANGA",".",ext_config) + infos_last("SHOW",".",ext_config)
 
-    infos = find_real_name_in_bd(name,infos)
-    sock.sendall(b"last_seen "+choose_bd(bd) + b" -i "+infos[0].encode())
+    infos = find_info(name,infos)
+    print(infos)
 
-    sock.close()
     
 def add_manga(name,chap,bd):
     """ The function add a manga name with the chap in the bd """
-    sock = connect_remote()
-
-    sock.sendall(b"last_seen "+choose_bd(bd) + b" -a "+name.encode()+ b" -c "+str(chap).encode())
-
-    sock.close()
+    write_info([name,chap],bd)
+    
 
 def add_show(name,season,episode,bd):
     """ The function add a show name with the season and episode in the bd """
-    sock = connect_remote()
-    
-    sock.sendall(b"last_seen "+choose_bd(bd) + b" -a "+name.encode() + b" -s "+str(season).encode() + b" -e "+str(episode).encode())
-
-    sock.close()
+    write_info([name,season,episode],bd)
 
 def suppr_info(name,bd):
     """ The function delete the line whith name in the bd """
-    list_info = infos_last("*",".",bd)
-    sock = connect_remote()
-
-    infos = find_real_name_in_bd(name,list_info)
-
-    if infos != None:
-        sock.sendall(b"last_seen " +choose_bd(bd) + b" -x " + infos[0].encode())
-                 
-    sock.close()    
+    list_info = infos_last("MANGA",".",bd)+infos_last("SHOW",".",bd)
+    
+    infos = find_info(name,list_info)
+    
+    write_info(infos,"DL","DEL")
 
 def format_number_zero(number_list):
     """ The function format correctly a the number in number_list and returns a str list correctly formated
