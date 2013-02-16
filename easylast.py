@@ -111,7 +111,7 @@ def suppr_info(name,bd):
     
     infos = find_info(name,list_info)
     
-    write_info(infos,"DL","DEL")
+    write_info(infos,bd,"DEL")
 
 def format_number_zero(number_list):
     """ The function format correctly a the number in number_list and returns a str list correctly formated
