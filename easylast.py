@@ -90,11 +90,15 @@ def upd_last_show(name_show,num_season,num_episode,ext_config):
 def incr_last(name,ext_config):
     """ The function incremente the name in the bd """
     
-    infos = infos_last("MANGA",".",ext_config) + infos_last("SHOW",".",ext_config)
+    infos_all = infos_last("MANGA",".",ext_config) + infos_last("SHOW",".",ext_config)
 
-    infos = find_info(name,infos)
-    print(infos)
+    infos = find_info(name,infos_all)
 
+    if len(infos) == 3:
+        infos[2]+=1
+    if len(infos) == 2:
+        infos[1]+=1
+    write_info(infos,ext_config)
     
 def add_manga(name,chap,bd):
     """ The function add a manga name with the chap in the bd """
