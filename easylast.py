@@ -152,6 +152,18 @@ def format_name(name,sep):
     name_f = '.'.join(word[0].upper() + word[1:] for word in name.lower().split(sep))    
     return name_f
 
+def infos_of_name(name,ext):
+
+    for info in  infos_last("MANGA",".",ext) + infos_last("SHOW",".",ext):
+        if re.search(name,info[0],re.IGNORECASE):
+            return info
+    print(name,"Nothing to do")
+    exit(0)
+
+def format_SXXEXX(num_season,num_episode):
+    num = format_number_zero([num_season,num_episode])
+    return "S"+num[0]+"E"+num[1]
+
 def send_inform(message):
     
     path_fifo = "/home/yosholo/.config/utils/.inform_fifo"
