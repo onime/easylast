@@ -164,15 +164,18 @@ def format_SXXEXX(num_season,num_episode):
     num = format_number_zero([num_season,num_episode])
     return "S"+num[0]+"E"+num[1]
 
-def send_inform(message):
+def send_inform(message,path_fifo="/home/yosholo/.config/utils/.inform_fifo"):
     
-    path_fifo = "/home/yosholo/.config/utils/.inform_fifo"
+    if not re.search("\n$",message):
+        message+="\n"
+
     if not os.path.exists(path_fifo):
         os.mkfifo(path_fifo)
 
     try:
         fifo = os.open(path_fifo,os.O_WRONLY | os.O_NONBLOCK)
         os.write(fifo,message.encode("utf-8"))
+        os.close(fifo)
     except:
         print("There's no process to read the info")
 
