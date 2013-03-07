@@ -160,10 +160,59 @@ def infos_of_name(name,ext):
     print(name,"Nothing to do")
     exit(0)
 
+def path_of_episode(name,season,episode,srt=False):
+
+    config = configparser.ConfigParser()
+    config.read("/home/yosholo/.config/utils/swgp/swgp.conf")
+    
+    path_scans = config.get("PATHS","scans")
+    path_shows = config["PATHS"]["shows"]
+
+    list_show = os.listdir(path_shows)
+    
+    path_ep = "a_fake_rep"
+    for show in list_show:
+        if re.search(name,show,re.IGNORECASE):
+            path_ep = path_shows+show+"/Saison."+str(season)+"/"
+
+    if srt==True:
+        path_ep_srt=["",""]
+   
+   
+    if os.path.exists(path_ep):
+        list_episode = os.listdir(path_ep)
+        for name_ep in list_episode:
+            if re.search(format_SXXEXX(season,episode),name_ep,re.IGNORECASE):
+                if srt == False:
+                    if not re.search(".srt$",name_ep):
+                        path_ep +=name_ep
+                else:
+                    if re.search(".srt$",name_ep):
+                        path_ep_srt[1] = path_ep+name_ep
+                    else:
+                        path_ep_srt[0] = path_ep+name_ep
+    else:
+        print("There is no file",name,"Saison",season,"Episode",episode,"to play")
+        exit(0)
+    
+    if srt == False:
+        return path_ep
+    else:
+        return path_ep_srt
+
 def format_SXXEXX(num_season,num_episode):
     num = format_number_zero([num_season,num_episode])
     return "S"+num[0]+"E"+num[1]
 
+def try_open_fifo(path):
+    try:
+        fifo = os.open(path,os.O_WRONLY | os.O_NONBLOCK)
+       
+        return True
+    except:
+       
+        return False
+    
 def send_inform(message,path_fifo="/home/yosholo/.config/utils/.inform_fifo"):
     
     if not re.search("\n$",message):
@@ -176,18 +225,18 @@ def send_inform(message,path_fifo="/home/yosholo/.config/utils/.inform_fifo"):
         fifo = os.open(path_fifo,os.O_WRONLY | os.O_NONBLOCK)
         os.write(fifo,message.encode("utf-8"))
         os.close(fifo)
+        return True
     except:
-        print("There's no process to read the info")
+        return False
 
-def read_inform():
+def read_inform(path_fifo="/home/yosholo/.config/utils/.inform_fifo"):
 
-    path_fifo = "/home/yosholo/.config/utils/.inform_fifo"
     if not os.path.exists(path_fifo):
         os.mkfifo(path_fifo)
 
     fifo = os.open(path_fifo,os.O_RDONLY)
     message = os.read(fifo,4096)
-    
-    return message
+    os.close(fifo)
+    return message.decode("utf-8")
 
 __version__ = '0.2'
