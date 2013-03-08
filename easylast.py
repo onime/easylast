@@ -7,14 +7,14 @@ from lxml import etree
 import configparser
 import os
 
+path_config = "/home/yosholo/.config/utils/swgp/swgp.conf"
 path_file_info = "/home/yosholo/.config/utils/infos_last"
 regex_infos = "S([0-9]+)E([0-9]+)|([0-9]+)x([0-9]+)|([0-9]{3})"
 parserHTML =  etree.HTMLParser( recover=True,encoding='utf-8')
 
 def write_info(info,dl_or_seen,cmd="ADD"):
-
-    info_config = configparser.ConfigParser()
-    info_config.read(path_file_info+"."+dl_or_seen)
+    
+    info_config = read_config(path_file_info+"."+dl_or_seen)
     
     if cmd == "ADD":
         if len(info) == 2:
@@ -30,6 +30,11 @@ def write_info(info,dl_or_seen,cmd="ADD"):
     with open(path_file_info+"."+dl_or_seen, 'w') as configfile:
         info_config.write(configfile)
 
+def read_config(path_config):
+    info_config = configparser.ConfigParser()
+    info_config.read(path_config)
+    
+    return info_config
     
 def find_info(name,infos):
 
@@ -42,8 +47,7 @@ def find_info(name,infos):
 
 def infos_last(type_infos,sep,dl_or_seen):
 
-    info_config = configparser.ConfigParser()
-    info_config.read(path_file_info+"."+dl_or_seen)
+    info_config = read_config(path_file_info+"."+dl_or_seen)
     
     ret = []
     
@@ -162,8 +166,7 @@ def infos_of_name(name,ext):
 
 def path_of_episode(name,season,episode,srt=False):
 
-    config = configparser.ConfigParser()
-    config.read("/home/yosholo/.config/utils/swgp/swgp.conf")
+    info_config = read_config(path_config)
     
     path_scans = config.get("PATHS","scans")
     path_shows = config["PATHS"]["shows"]
