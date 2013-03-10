@@ -162,7 +162,7 @@ def infos_of_name(name,ext):
         if re.search(name,info[0],re.IGNORECASE):
             return info
     print(name,"Nothing to do")
-    exit(0)
+    return None
 
 def path_of_episode(name,season,episode,srt=False):
 
