@@ -6,11 +6,38 @@ import re
 from lxml import etree
 import configparser
 import os
+from time import sleep
 
 path_config = "/home/yosholo/.config/utils/swgp/swgp.conf"
 path_file_info = "/home/yosholo/.config/utils/infos_last"
 regex_infos = "S([0-9]+)E([0-9]+)|([0-9]+)x([0-9]+)|([0-9]{3})"
 parserHTML =  etree.HTMLParser( recover=True,encoding='utf-8')
+parserXML = etree.XMLParser(ns_clean=True, recover=True,encoding='iso-8859-1')
+
+def try_parse(url,type_url="html"):
+
+    if type_url == "html":
+        parser = parserHTML
+    elif type_url == "xml":
+        parser = parserXML
+    else:
+        raise Exception("type_bad url")
+
+    try:
+        tree_rss = etree.parse(url,parser)
+        return tree_rss
+    except OSError as Err:
+        print("Failed to load",url)
+        return False
+
+def parse_url(url,type_url="html"):
+    tree = try_parse(url,type_url)
+
+    while tree == False:
+        sleep(0.2)
+        tree = try_parse(url,type_url)
+
+    return tree
 
 def write_info(info,dl_or_seen,cmd="ADD"):
     
@@ -44,6 +71,8 @@ def find_info(name,infos):
         if re.search(name,info[0],re.IGNORECASE) != None :
             ret = info
     return ret
+
+
 
 def infos_last(type_infos,sep,dl_or_seen):
 
