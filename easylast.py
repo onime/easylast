@@ -185,12 +185,13 @@ def format_name(name,sep):
     name_f = '.'.join(word[0].upper() + word[1:] for word in name.lower().split(sep))    
     return name_f
 
-def infos_of_name(name,ext):
+def infos_of_name(name,ext,DEBUG=False):
 
     for info in  infos_last("MANGA",".",ext) + infos_last("SHOW",".",ext):
         if re.search(name,info[0],re.IGNORECASE):
             return info
-    print(name,"Nothing to do")
+    if DEBUG == True:
+        print(name,"infos_of_name :",name,"Nothing to do")
     return None
 
 def path_of_episode(name,season,episode,srt=False):
