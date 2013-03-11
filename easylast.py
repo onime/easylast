@@ -197,8 +197,8 @@ def path_of_episode(name,season,episode,srt=False):
 
     info_config = read_config(path_config)
     
-    path_scans = config.get("PATHS","scans")
-    path_shows = config["PATHS"]["shows"]
+    path_scans = info_config.get("PATHS","scans")
+    path_shows = info_config["PATHS"]["shows"]
 
     list_show = os.listdir(path_shows)
     
