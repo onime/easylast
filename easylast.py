@@ -62,7 +62,19 @@ def read_config(path_config):
     info_config.read(path_config)
     
     return info_config
+
+def is_manga(info):
+    if len(info) == 2:
+        return True
+    else:
+        return False
     
+def is_show(info):
+    if len(info) == 3:
+        return True
+    else:
+        return False
+
 def find_info(name,infos):
 
     """ Return the infos which correspond to the real name in the bd """    
