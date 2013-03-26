@@ -75,6 +75,32 @@ def is_show(info):
     else:
         return False
 
+def cmp_num(hash_num_a,hash_num_b,type_hash):
+ 
+    if type_hash == "MANGA":
+        
+        if info_a["chap"] > info_b["chap"]:
+            return 1
+        elif info_a["chap"] < info_b["chap"]:
+            return -1
+        else:
+            return 0
+    elif type_hash == "SHOW":
+
+        if info_a["season"] == info_b["season"] and info_a["episode"] > info_b["episode"]:
+            return 1
+        elif info_a["season"] == info_b["season"] and info_a["episode"] < info_b["episode"]:
+            return -1
+        elif info_a["season"] > info_b["season"]:
+            return 1
+        elif info_a["season"] < info_b["season"]:
+            return -1
+        else:
+            return 0
+
+    else:
+            return None
+
 def find_info(name,infos):
 
     """ Return the infos which correspond to the real name in the bd """    
