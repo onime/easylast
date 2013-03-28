@@ -78,21 +78,21 @@ def cmp_num(hash_num_a,hash_num_b,type_hash):
  
     if type_hash == "MANGA":
         
-        if info_a["chap"] > info_b["chap"]:
+        if hash_num_a["chap"] > hash_num_b["chap"]:
             return 1
-        elif info_a["chap"] < info_b["chap"]:
+        elif hash_num_a["chap"] < hash_num_b["chap"]:
             return -1
         else:
             return 0
     elif type_hash == "SHOW":
 
-        if info_a["season"] == info_b["season"] and info_a["episode"] > info_b["episode"]:
+        if hash_num_a["season"] == hash_num_b["season"] and hash_num_a["episode"] > hash_num_b["episode"]:
             return 1
-        elif info_a["season"] == info_b["season"] and info_a["episode"] < info_b["episode"]:
+        elif hash_num_a["season"] == hash_num_b["season"] and hash_num_a["episode"] < hash_num_b["episode"]:
             return -1
-        elif info_a["season"] > info_b["season"]:
+        elif hash_num_a["season"] > hash_num_b["season"]:
             return 1
-        elif info_a["season"] < info_b["season"]:
+        elif hash_num_a["season"] < hash_num_b["season"]:
             return -1
         else:
             return 0
