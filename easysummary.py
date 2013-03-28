@@ -10,30 +10,22 @@ def connect_to_summary():
     return  db["summary"]
 
 
-def find_summary(name):
+def find_summary(query):
     """ infos is the result of the function infos_of_name """
+    collect_summary = connect_to_summary()
+    doc_find = collect_summary.find(query)
+
+    for doc in doc_find:
+        print(doc["summary"])
     
-    print(summary.find_one({"name_manga":"/"+name+"/i"}))
+def add_summary(info,summary):   
 
-def make_contrainst(infos):
-    if(is_manga(infos)):
-       name = "name_manga"
-       num = "num_chap"       
-
-def add_summary(info,summary):
-#    info["summary"] = "gros fuck"
-    doc = {}
-    doc["name"] = info["name"]
-    hash_num = info["num"]
-
-    for k,h in hash_num.items():
-        doc[k] = h
-
-    print(doc)
-
-info = infos_of_name("how.i.met.your","VU")
-
-add_summary(info,"grodfgfsdhdfs")
+    info["summary"] = summary
+    collect_summary = connect_to_summary()
+    collect_summary.save(info)
 
 
-print(summary.find_one())
+
+
+
+
