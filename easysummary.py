@@ -15,14 +15,25 @@ def find_summary(name):
     
     print(summary.find_one({"name_manga":"/"+name+"/i"}))
 
-def contrainst(infos):
-    if(is_manga(infos):
+def make_contrainst(infos):
+    if(is_manga(infos)):
        name = "name_manga"
        num = "num_chap"       
 
+def add_summary(info,summary):
+#    info["summary"] = "gros fuck"
+    doc = {}
+    doc["name"] = info["name"]
+    hash_num = info["num"]
 
-summary = connect_to_summary()
+    for k,h in hash_num.items():
+        doc[k] = h
 
+    print(doc)
+
+info = infos_of_name("how.i.met.your","VU")
+
+add_summary(info,"grodfgfsdhdfs")
 
 
 print(summary.find_one())
